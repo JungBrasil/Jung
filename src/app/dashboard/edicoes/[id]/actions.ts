@@ -16,8 +16,8 @@ const pessoaSchema = z.object({
   endereco_cidade: z.string().optional(),
   endereco_estado: z.string().optional(),
   endereco_cep: z.string().optional(),
-  altura_cm: z.number().optional(),
-  peso_kg: z.number().optional(),
+  altura_cm: z.coerce.number().optional(),
+  peso_kg: z.coerce.number().optional(),
   tamanho_camiseta: z.string().optional(),
   toma_medicamento_continuo: z.boolean().default(false),
   medicamentos_continuos: z.string().optional(),
@@ -76,4 +76,21 @@ export async function updatePessoa(
   revalidatePath(`/dashboard/pessoas/${personId}`);
   revalidatePath(`/dashboard/edicoes`); // Revalidate list pages
   return { success: true, data };
+}
+
+export async function getParticipantsForReport(editionId: string) {
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("pessoas")
+    .select("nome_completo, telefone, tribos(nome)")
+    .eq("edicao_id", editionId)
+    .eq("tipo", "participante")
+    .order("nome_completo", { ascending: true });
+
+  if (error) {
+    console.error("Report data error:", error);
+    return { error: "Falha ao buscar dados para o relatório." };
+  }
+
+  return { data };
 }

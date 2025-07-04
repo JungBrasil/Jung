@@ -15,6 +15,7 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditionFormDialog } from "@/components/dashboard/edicoes/edition-form-dialog";
+import { GenerateReportButton } from "@/components/dashboard/edicoes/generate-report-button";
 
 export default async function EditionDetailsPage({
   params,
@@ -53,6 +54,10 @@ export default async function EditionDetailsPage({
           </Badge>
         </CardContent>
       </Card>
+
+      <div className="mb-6">
+        <GenerateReportButton editionId={edicao.id} editionName={edicao.nome_edicao} />
+      </div>
 
       <Tabs defaultValue="participantes">
         <TabsList className="grid w-full grid-cols-2">
