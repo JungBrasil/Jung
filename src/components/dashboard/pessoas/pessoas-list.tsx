@@ -17,17 +17,26 @@ type PessoaTipo = "participante" | "equipe";
 export async function PessoasList({
   editionId,
   tipo,
+  searchQuery,
 }: {
   editionId: string;
   tipo: PessoaTipo;
+  searchQuery?: string;
 }) {
   const supabase = createSupabaseServerClient();
-  const { data: pessoas, error } = await supabase
+  
+  let query = supabase
     .from("pessoas")
     .select("*, tribos(nome)")
     .eq("edicao_id", editionId)
     .eq("tipo", tipo)
     .order("nome_completo", { ascending: true });
+
+  if (searchQuery) {
+    query = query.ilike("nome_completo", `%${searchQuery}%`);
+  }
+
+  const { data: pessoas, error } = await query;
 
   if (error) {
     return <p className="text-red-500">Erro ao carregar dados.</p>;
@@ -38,8 +47,8 @@ export async function PessoasList({
   if (!pessoas || pessoas.length === 0) {
     return (
       <div className="text-center text-muted-foreground border rounded-lg p-8">
-        <p>Nenhum {tipoLabel} cadastrado para esta edição ainda.</p>
-        <p>Clique em "Adicionar {tipo === 'participante' ? 'Participante' : 'Membro'}" para começar.</p>
+        <p>Nenhum {tipoLabel} encontrado{searchQuery ? ` para a busca "${searchQuery}"` : ""}.</p>
+        {!searchQuery && <p>Clique em "Adicionar {tipo === 'participante' ? 'Participante' : 'Membro'}" para começar.</p>}
       </div>
     );
   }

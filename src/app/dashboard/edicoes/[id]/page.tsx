@@ -16,11 +16,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditionFormDialog } from "@/components/dashboard/edicoes/edition-form-dialog";
 import { GenerateReportButton } from "@/components/dashboard/edicoes/generate-report-button";
+import { SearchInput } from "@/components/dashboard/shared/search-input";
 
 export default async function EditionDetailsPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams?: { q?: string };
 }) {
   const supabase = createSupabaseServerClient();
   const { data: edicao, error } = await supabase
@@ -32,6 +35,8 @@ export default async function EditionDetailsPage({
   if (error || !edicao) {
     notFound();
   }
+
+  const searchQuery = searchParams?.q || "";
 
   return (
     <div>
@@ -55,7 +60,8 @@ export default async function EditionDetailsPage({
         </CardContent>
       </Card>
 
-      <div className="mb-6">
+      <div className="flex justify-between items-center mb-6 gap-4">
+        <SearchInput placeholder="Buscar por nome..." />
         <GenerateReportButton editionId={edicao.id} editionName={edicao.nome_edicao} />
       </div>
 
@@ -70,7 +76,7 @@ export default async function EditionDetailsPage({
             <PessoaFormSheet editionId={edicao.id} tipo="participante" mode="add" />
           </div>
           <Suspense fallback={<Skeleton className="w-full h-64" />}>
-            <PessoasList editionId={edicao.id} tipo="participante" />
+            <PessoasList editionId={edicao.id} tipo="participante" searchQuery={searchQuery} />
           </Suspense>
         </TabsContent>
         <TabsContent value="equipe">
@@ -79,7 +85,7 @@ export default async function EditionDetailsPage({
             <PessoaFormSheet editionId={edicao.id} tipo="equipe" mode="add" />
           </div>
           <Suspense fallback={<Skeleton className="w-full h-64" />}>
-            <PessoasList editionId={edicao.id} tipo="equipe" />
+            <PessoasList editionId={edicao.id} tipo="equipe" searchQuery={searchQuery} />
           </Suspense>
         </TabsContent>
       </Tabs>
