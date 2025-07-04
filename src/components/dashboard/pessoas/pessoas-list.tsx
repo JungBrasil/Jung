@@ -9,23 +9,34 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-export async function ParticipantsList({ editionId }: { editionId: string }) {
+type PessoaTipo = "participante" | "equipe";
+
+export async function PessoasList({
+  editionId,
+  tipo,
+}: {
+  editionId: string;
+  tipo: PessoaTipo;
+}) {
   const supabase = createSupabaseServerClient();
-  const { data: participantes, error } = await supabase
-    .from("participantes")
+  const { data: pessoas, error } = await supabase
+    .from("pessoas")
     .select("*")
     .eq("edicao_id", editionId)
+    .eq("tipo", tipo)
     .order("nome_completo", { ascending: true });
 
   if (error) {
-    return <p className="text-red-500">Erro ao carregar participantes.</p>;
+    return <p className="text-red-500">Erro ao carregar dados.</p>;
   }
 
-  if (!participantes || participantes.length === 0) {
+  const tipoLabel = tipo === "participante" ? "participante" : "membro da equipe";
+
+  if (!pessoas || pessoas.length === 0) {
     return (
       <div className="text-center text-muted-foreground border rounded-lg p-8">
-        <p>Nenhum participante cadastrado para esta edição ainda.</p>
-        <p>Clique em "Adicionar Participante" para começar.</p>
+        <p>Nenhum {tipoLabel} cadastrado para esta edição ainda.</p>
+        <p>Clique em "Adicionar {tipo === 'participante' ? 'Participante' : 'Membro'}" para começar.</p>
       </div>
     );
   }
@@ -42,7 +53,7 @@ export async function ParticipantsList({ editionId }: { editionId: string }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {participantes.map((p) => (
+          {pessoas.map((p) => (
             <TableRow key={p.id}>
               <TableCell className="font-medium">{p.nome_completo}</TableCell>
               <TableCell>{p.telefone}</TableCell>

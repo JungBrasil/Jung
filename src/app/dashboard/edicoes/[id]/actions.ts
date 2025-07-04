@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import * as z from "zod";
 
-const participantSchema = z.object({
+const pessoaSchema = z.object({
   nome_completo: z.string().min(3),
   data_nascimento: z.date(),
   telefone: z.string().optional(),
@@ -29,15 +29,17 @@ const participantSchema = z.object({
   observacoes: z.string().optional(),
 });
 
-export async function addParticipant(
+export async function addPessoa(
   editionId: string,
-  values: z.infer<typeof participantSchema>
+  tipo: "participante" | "equipe",
+  values: z.infer<typeof pessoaSchema>
 ) {
   const supabase = createSupabaseServerClient();
 
-  const { data, error } = await supabase.from("participantes").insert([
+  const { data, error } = await supabase.from("pessoas").insert([
     {
       edicao_id: editionId,
+      tipo: tipo,
       ...values,
       data_nascimento: values.data_nascimento.toISOString().split('T')[0], // Format as YYYY-MM-DD
     },
@@ -45,7 +47,7 @@ export async function addParticipant(
 
   if (error) {
     console.error("Supabase error:", error.message);
-    return { success: false, error: "Falha ao adicionar participante." };
+    return { success: false, error: "Falha ao adicionar registro." };
   }
 
   revalidatePath(`/dashboard/edicoes/${editionId}`);

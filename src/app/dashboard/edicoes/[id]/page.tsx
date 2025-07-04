@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { AddParticipantSheet } from "@/components/dashboard/participantes/add-participant-sheet";
-import { ParticipantsList } from "@/components/dashboard/participantes/participants-list";
+import { AddPessoaSheet } from "@/components/dashboard/pessoas/add-pessoa-sheet";
+import { PessoasList } from "@/components/dashboard/pessoas/pessoas-list";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function EditionDetailsPage({
   params,
@@ -46,14 +47,30 @@ export default async function EditionDetailsPage({
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Participantes</h2>
-        <AddParticipantSheet editionId={edicao.id} />
-      </div>
-
-      <Suspense fallback={<Skeleton className="w-full h-64" />}>
-        <ParticipantsList editionId={edicao.id} />
-      </Suspense>
+      <Tabs defaultValue="participantes">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="participantes">Participantes</TabsTrigger>
+          <TabsTrigger value="equipe">Equipe de Trabalho</TabsTrigger>
+        </TabsList>
+        <TabsContent value="participantes">
+          <div className="flex items-center justify-between my-6">
+            <h2 className="text-2xl font-bold">Lista de Participantes</h2>
+            <AddPessoaSheet editionId={edicao.id} tipo="participante" />
+          </div>
+          <Suspense fallback={<Skeleton className="w-full h-64" />}>
+            <PessoasList editionId={edicao.id} tipo="participante" />
+          </Suspense>
+        </TabsContent>
+        <TabsContent value="equipe">
+          <div className="flex items-center justify-between my-6">
+            <h2 className="text-2xl font-bold">Lista da Equipe</h2>
+            <AddPessoaSheet editionId={edicao.id} tipo="equipe" />
+          </div>
+          <Suspense fallback={<Skeleton className="w-full h-64" />}>
+            <PessoasList editionId={edicao.id} tipo="equipe" />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

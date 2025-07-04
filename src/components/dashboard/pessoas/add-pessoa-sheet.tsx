@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { addParticipant } from "@/app/dashboard/edicoes/[id]/actions";
+import { addPessoa } from "@/app/dashboard/edicoes/[id]/actions";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +44,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-const participantSchema = z.object({
+const pessoaSchema = z.object({
   nome_completo: z.string().min(3, "Nome é obrigatório."),
   data_nascimento: z.date({ required_error: "Data de nascimento é obrigatória." }),
   telefone: z.string().optional(),
@@ -69,10 +69,12 @@ const participantSchema = z.object({
   observacoes: z.string().optional(),
 });
 
-export function AddParticipantSheet({ editionId }: { editionId: string }) {
+type PessoaTipo = "participante" | "equipe";
+
+export function AddPessoaSheet({ editionId, tipo }: { editionId: string, tipo: PessoaTipo }) {
   const [isOpen, setIsOpen] = useState(false);
-  const form = useForm<z.infer<typeof participantSchema>>({
-    resolver: zodResolver(participantSchema),
+  const form = useForm<z.infer<typeof pessoaSchema>>({
+    resolver: zodResolver(pessoaSchema),
     defaultValues: {
       nome_completo: "",
       telefone: "",
@@ -87,28 +89,30 @@ export function AddParticipantSheet({ editionId }: { editionId: string }) {
   const watchTomaMedicamento = form.watch("toma_medicamento_continuo");
   const watchPossuiAlergias = form.watch("possui_alergias");
 
-  async function onSubmit(values: z.infer<typeof participantSchema>) {
-    const result = await addParticipant(editionId, values);
+  async function onSubmit(values: z.infer<typeof pessoaSchema>) {
+    const result = await addPessoa(editionId, tipo, values);
     if (result.success) {
-      toast.success("Participante adicionado com sucesso!");
+      toast.success(`${tipo === 'participante' ? 'Participante' : 'Membro da equipe'} adicionado(a) com sucesso!`);
       setIsOpen(false);
       form.reset();
     } else {
       toast.error(result.error);
     }
   }
+  
+  const title = tipo === 'participante' ? 'Adicionar Novo Participante' : 'Adicionar Membro da Equipe';
+  const description = `Preencha os dados do novo ${tipo === 'participante' ? 'participante' : 'membro da equipe'}.`;
+  const buttonText = tipo === 'participante' ? 'Adicionar Participante' : 'Adicionar Membro';
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button>Adicionar Participante</Button>
+        <Button>{buttonText}</Button>
       </SheetTrigger>
       <SheetContent className="sm:max-w-2xl w-full">
         <SheetHeader>
-          <SheetTitle>Adicionar Novo Participante</SheetTitle>
-          <SheetDescription>
-            Preencha os dados do participante.
-          </SheetDescription>
+          <SheetTitle>{title}</SheetTitle>
+          <SheetDescription>{description}</SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -206,7 +210,7 @@ export function AddParticipantSheet({ editionId }: { editionId: string }) {
                 <Button type="button" variant="outline">Cancelar</Button>
               </SheetClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Salvando..." : "Salvar Participante"}
+                {form.formState.isSubmitting ? "Salvando..." : `Salvar ${tipo === 'participante' ? 'Participante' : 'Membro'}`}
               </Button>
             </SheetFooter>
           </form>
