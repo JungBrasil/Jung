@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import Link from "next/link";
 
 export async function EditionsList() {
   const supabase = createSupabaseServerClient();
@@ -33,21 +34,23 @@ export async function EditionsList() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {edicoes.map((edicao) => (
-        <Card key={edicao.id}>
-          <CardHeader>
-            <CardTitle>{edicao.nome_edicao}</CardTitle>
-            <CardDescription>Edição Nº {edicao.numero_edicao}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{edicao.local}</p>
-          </CardContent>
-          <CardFooter>
-            <Badge variant="outline">
-              {format(new Date(edicao.data_inicio), "dd/MM/yyyy")} -{" "}
-              {format(new Date(edicao.data_fim), "dd/MM/yyyy")}
-            </Badge>
-          </CardFooter>
-        </Card>
+        <Link href={`/dashboard/edicoes/${edicao.id}`} key={edicao.id}>
+          <Card className="h-full hover:border-primary transition-colors">
+            <CardHeader>
+              <CardTitle>{edicao.nome_edicao}</CardTitle>
+              <CardDescription>Edição Nº {edicao.numero_edicao}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">{edicao.local}</p>
+            </CardContent>
+            <CardFooter>
+              <Badge variant="outline">
+                {format(new Date(edicao.data_inicio), "dd/MM/yyyy")} -{" "}
+                {format(new Date(edicao.data_fim), "dd/MM/yyyy")}
+              </Badge>
+            </CardFooter>
+          </Card>
+        </Link>
       ))}
     </div>
   );
