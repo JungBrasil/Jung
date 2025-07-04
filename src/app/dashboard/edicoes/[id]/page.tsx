@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { AddPessoaSheet } from "@/components/dashboard/pessoas/add-pessoa-sheet";
+import { PessoaFormSheet } from "@/components/dashboard/pessoas/pessoa-form-sheet";
 import { PessoasList } from "@/components/dashboard/pessoas/pessoas-list";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -55,7 +55,7 @@ export default async function EditionDetailsPage({
         <TabsContent value="participantes">
           <div className="flex items-center justify-between my-6">
             <h2 className="text-2xl font-bold">Lista de Participantes</h2>
-            <AddPessoaSheet editionId={edicao.id} tipo="participante" />
+            <PessoaFormSheet editionId={edicao.id} tipo="participante" mode="add" />
           </div>
           <Suspense fallback={<Skeleton className="w-full h-64" />}>
             <PessoasList editionId={edicao.id} tipo="participante" />
@@ -64,7 +64,7 @@ export default async function EditionDetailsPage({
         <TabsContent value="equipe">
           <div className="flex items-center justify-between my-6">
             <h2 className="text-2xl font-bold">Lista da Equipe</h2>
-            <AddPessoaSheet editionId={edicao.id} tipo="equipe" />
+            <PessoaFormSheet editionId={edicao.id} tipo="equipe" mode="add" />
           </div>
           <Suspense fallback={<Skeleton className="w-full h-64" />}>
             <PessoasList editionId={edicao.id} tipo="equipe" />

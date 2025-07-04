@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { addPessoa } from "@/app/dashboard/edicoes/[id]/actions";
+import { addPessoa, updatePessoa } from "@/app/dashboard/edicoes/[id]/actions";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +39,7 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -69,46 +69,72 @@ const pessoaSchema = z.object({
   observacoes: z.string().optional(),
 });
 
+type PessoaSchemaType = z.infer<typeof pessoaSchema>;
 type PessoaTipo = "participante" | "equipe";
 
-export function AddPessoaSheet({ editionId, tipo }: { editionId: string, tipo: PessoaTipo }) {
+interface PessoaFormSheetProps {
+  editionId: string;
+  tipo: PessoaTipo;
+  mode: "add" | "edit";
+  initialData?: Partial<PessoaSchemaType> & { id?: string };
+  trigger?: React.ReactNode;
+}
+
+export function PessoaFormSheet({ editionId, tipo, mode, initialData, trigger }: PessoaFormSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const form = useForm<z.infer<typeof pessoaSchema>>({
+  
+  const defaultValues = mode === 'edit' && initialData ? {
+    ...initialData,
+    data_nascimento: initialData.data_nascimento ? new Date(initialData.data_nascimento) : undefined,
+  } : {
+    nome_completo: "",
+    telefone: "",
+    email: "",
+    tamanho_camiseta: "M",
+    toma_medicamento_continuo: false,
+    possui_alergias: false,
+    e_servo: false,
+  };
+
+  const form = useForm<PessoaSchemaType>({
     resolver: zodResolver(pessoaSchema),
-    defaultValues: {
-      nome_completo: "",
-      telefone: "",
-      email: "",
-      tamanho_camiseta: "M",
-      toma_medicamento_continuo: false,
-      possui_alergias: false,
-      e_servo: false,
-    },
+    defaultValues,
   });
 
   const watchTomaMedicamento = form.watch("toma_medicamento_continuo");
   const watchPossuiAlergias = form.watch("possui_alergias");
 
-  async function onSubmit(values: z.infer<typeof pessoaSchema>) {
-    const result = await addPessoa(editionId, tipo, values);
+  async function onSubmit(values: PessoaSchemaType) {
+    let result;
+    if (mode === 'edit' && initialData?.id) {
+      result = await updatePessoa(initialData.id, values);
+    } else {
+      result = await addPessoa(editionId, tipo, values);
+    }
+
     if (result.success) {
-      toast.success(`${tipo === 'participante' ? 'Participante' : 'Membro da equipe'} adicionado(a) com sucesso!`);
+      toast.success(mode === 'edit' ? 'Dados atualizados com sucesso!' : `${tipo === 'participante' ? 'Participante' : 'Membro'} adicionado(a) com sucesso!`);
       setIsOpen(false);
-      form.reset();
+      if (mode === 'add') form.reset();
     } else {
       toast.error(result.error);
     }
   }
   
-  const title = tipo === 'participante' ? 'Adicionar Novo Participante' : 'Adicionar Membro da Equipe';
-  const description = `Preencha os dados do novo ${tipo === 'participante' ? 'participante' : 'membro da equipe'}.`;
-  const buttonText = tipo === 'participante' ? 'Adicionar Participante' : 'Adicionar Membro';
+  const isEditMode = mode === 'edit';
+  const title = isEditMode ? 'Editar Dados' : (tipo === 'participante' ? 'Adicionar Novo Participante' : 'Adicionar Membro da Equipe');
+  const description = isEditMode ? 'Altere os dados conforme necessário.' : `Preencha os dados do novo ${tipo === 'participante' ? 'participante' : 'membro da equipe'}.`;
+  const buttonText = isEditMode ? 'Salvar Alterações' : (tipo === 'participante' ? 'Adicionar Participante' : 'Adicionar Membro');
+
+  const defaultTrigger = (
+    <Button>
+      {isEditMode ? <><Pencil className="mr-2 h-4 w-4" /> Editar</> : buttonText}
+    </Button>
+  );
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
-        <Button>{buttonText}</Button>
-      </SheetTrigger>
+      <SheetTrigger asChild>{trigger || defaultTrigger}</SheetTrigger>
       <SheetContent className="sm:max-w-2xl w-full">
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
@@ -210,7 +236,7 @@ export function AddPessoaSheet({ editionId, tipo }: { editionId: string, tipo: P
                 <Button type="button" variant="outline">Cancelar</Button>
               </SheetClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Salvando..." : `Salvar ${tipo === 'participante' ? 'Participante' : 'Membro'}`}
+                {form.formState.isSubmitting ? "Salvando..." : buttonText}
               </Button>
             </SheetFooter>
           </form>

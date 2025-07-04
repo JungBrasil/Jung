@@ -41,7 +41,7 @@ export async function addPessoa(
       edicao_id: editionId,
       tipo: tipo,
       ...values,
-      data_nascimento: values.data_nascimento.toISOString().split('T')[0], // Format as YYYY-MM-DD
+      data_nascimento: values.data_nascimento.toISOString().split('T')[0],
     },
   ]);
 
@@ -51,5 +51,29 @@ export async function addPessoa(
   }
 
   revalidatePath(`/dashboard/edicoes/${editionId}`);
+  return { success: true, data };
+}
+
+export async function updatePessoa(
+  personId: string,
+  values: z.infer<typeof pessoaSchema>
+) {
+  const supabase = createSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("pessoas")
+    .update({
+      ...values,
+      data_nascimento: values.data_nascimento.toISOString().split('T')[0],
+    })
+    .eq("id", personId);
+
+  if (error) {
+    console.error("Supabase error:", error.message);
+    return { success: false, error: "Falha ao atualizar registro." };
+  }
+
+  revalidatePath(`/dashboard/pessoas/${personId}`);
+  revalidatePath(`/dashboard/edicoes`); // Revalidate list pages
   return { success: true, data };
 }

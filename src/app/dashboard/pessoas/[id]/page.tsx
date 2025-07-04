@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,28 +18,30 @@ import {
   Weight,
   Shirt,
   Pill,
-  Siren,
   Church,
   Users,
   Info,
   Shield,
   Briefcase,
+  DollarSign,
+  Pencil,
 } from "lucide-react";
 import { AssignTribe } from "@/components/dashboard/pessoas/assign-tribe";
 import { AssignSectors } from "@/components/dashboard/pessoas/assign-sectors";
+import { FinancialStatus } from "@/components/dashboard/pessoas/financial-status";
+import { PessoaFormSheet } from "@/components/dashboard/pessoas/pessoa-form-sheet";
+import { Button } from "@/components/ui/button";
 
 async function getPersonData(id: string) {
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase
     .from("pessoas")
-    .select("*, edicoes(*), tribos(*), equipe_setores(setores(*)))")
+    .select("*, edicoes(*), tribos(*), equipe_setores(setores(*)), pagamentos(*))")
     .eq("id", id)
     .single();
   
   if (error) return { person: null, error };
   
-  // Supabase returns equipe_setores as an array of objects with a 'setores' property.
-  // We want to flatten this to just an array of sector objects.
   const person = {
     ...data,
     setores: data.equipe_setores.map(es => es.setores)
@@ -74,12 +75,21 @@ export default async function PessoaDetailsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">{person.nome_completo}</h1>
-        <p className="text-muted-foreground">
-          {person.tipo === "participante" ? "Participante" : "Membro da Equipe"} da{" "}
-          <span className="font-semibold">{person.edicoes?.nome_edicao}</span>
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">{person.nome_completo}</h1>
+          <p className="text-muted-foreground">
+            {person.tipo === "participante" ? "Participante" : "Membro da Equipe"} da{" "}
+            <span className="font-semibold">{person.edicoes?.nome_edicao}</span>
+          </p>
+        </div>
+        <PessoaFormSheet 
+          mode="edit"
+          editionId={person.edicao_id}
+          tipo={person.tipo as "participante" | "equipe"}
+          initialData={person}
+          trigger={<Button variant="outline"><Pencil className="mr-2 h-4 w-4" /> Editar Dados</Button>}
+        />
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -124,6 +134,12 @@ export default async function PessoaDetailsPage({
         </div>
 
         <div className="space-y-6">
+          <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5" /> Financeiro</CardTitle></CardHeader>
+            <CardContent>
+              <FinancialStatus person={person} />
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5" /> Tribo</CardTitle></CardHeader>
             <CardContent>
