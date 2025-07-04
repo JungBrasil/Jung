@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import * as z from "zod";
 
 export async function updateTribeForPerson(personId: string, tribeId: string) {
   const supabase = createSupabaseServerClient();
@@ -49,5 +50,50 @@ export async function updateSectorsForPerson(personId: string, sectorIds: string
   }
 
   revalidatePath(`/dashboard/pessoas/${personId}`);
+  return { success: true };
+}
+
+const paymentSchema = z.object({
+  valor: z.number(),
+  data_pagamento: z.date(),
+  metodo_pagamento: z.string(),
+  personId: z.string().uuid(),
+  editionId: z.string().uuid(),
+});
+
+export async function addPayment(values: z.infer<typeof paymentSchema>) {
+  const supabase = createSupabaseServerClient();
+
+  const { error } = await supabase.from("pagamentos").insert({
+    pessoa_id: values.personId,
+    edicao_id: values.editionId,
+    valor: values.valor,
+    data_pagamento: values.data_pagamento.toISOString().split('T')[0],
+    metodo_pagamento: values.metodo_pagamento,
+  });
+
+  if (error) {
+    console.error("Payment error:", error);
+    return { success: false, error: "Falha ao registrar pagamento." };
+  }
+
+  revalidatePath(`/dashboard/pessoas/${values.personId}`);
+  return { success: true };
+}
+
+export async function deletePayment(paymentId: string) {
+  const supabase = createSupabaseServerClient();
+  const { error } = await supabase
+    .from("pagamentos")
+    .delete()
+    .eq("id", paymentId);
+
+  if (error) {
+    console.error("Delete payment error:", error);
+    return { success: false, error: "Falha ao remover pagamento." };
+  }
+
+  // Revalidar o path de pessoas para atualizar a lista em qualquer página de detalhes
+  revalidatePath("/dashboard/pessoas", "layout");
   return { success: true };
 }
