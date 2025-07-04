@@ -32,6 +32,30 @@ export async function addSector(values: { name: string }) {
   return { success: "Setor adicionado com sucesso!" };
 }
 
+export async function updateSector(id: string, values: { name: string }) {
+  const validatedFields = itemSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Nome inválido." };
+  }
+
+  const supabase = createSupabaseServerClient();
+  const { error } = await supabase
+    .from("setores")
+    .update({ nome: validatedFields.data.name })
+    .eq("id", id);
+
+  if (error) {
+    if (error.code === "23505") {
+      return { error: "Este setor já existe." };
+    }
+    return { error: "Falha ao atualizar setor." };
+  }
+
+  revalidatePath("/dashboard/setores");
+  return { success: "Setor atualizado com sucesso!" };
+}
+
 export async function deleteSector(id: string) {
   const supabase = createSupabaseServerClient();
   const { error } = await supabase.from("setores").delete().eq("id", id);

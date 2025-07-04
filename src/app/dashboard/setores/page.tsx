@@ -1,6 +1,6 @@
 import { AddItemForm } from "@/components/dashboard/shared/add-item-form";
 import { ItemsList } from "@/components/dashboard/shared/items-list";
-import { addSector, deleteSector } from "./actions";
+import { addSector, deleteSector, updateSector } from "./actions";
 
 export default function SetoresPage() {
   return (
@@ -20,18 +20,12 @@ export default function SetoresPage() {
         </div>
         <div className="md:col-span-2">
           <ItemsList
-            fetcher={() =>
-              addSector({ name: "" }).then(() =>
-                // This is a trick to get the list after an add
-                fetch("http://localhost:3000/api/setores").then((res) =>
-                  res.json()
-                )
-              )
-            }
             deleteAction={deleteSector}
+            updateAction={updateSector}
             title="Setores Cadastrados"
             notFoundMessage="Nenhum setor cadastrado."
             tableName="setores"
+            itemName="Setor"
           />
         </div>
       </div>

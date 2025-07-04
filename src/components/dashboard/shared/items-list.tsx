@@ -9,19 +9,24 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteItemButton } from "./delete-item-button";
+import { EditItemDialog } from "./edit-item-dialog";
 
 interface ItemsListProps {
   deleteAction: (id: string) => Promise<{ success?: string; error?: string }>;
+  updateAction: (id: string, values: { name: string }) => Promise<{ success?: string; error?: string }>;
   title: string;
   notFoundMessage: string;
   tableName: "setores" | "tribos";
+  itemName: string;
 }
 
 export async function ItemsList({
   deleteAction,
+  updateAction,
   title,
   notFoundMessage,
   tableName,
+  itemName,
 }: ItemsListProps) {
   const supabase = createSupabaseServerClient();
   const { data: items, error } = await supabase
@@ -54,6 +59,7 @@ export async function ItemsList({
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.nome}</TableCell>
                   <TableCell className="text-right">
+                    <EditItemDialog item={item} action={updateAction} itemName={itemName} />
                     <DeleteItemButton id={item.id} action={deleteAction} />
                   </TableCell>
                 </TableRow>

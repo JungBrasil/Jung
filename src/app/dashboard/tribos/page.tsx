@@ -1,6 +1,6 @@
 import { AddItemForm } from "@/components/dashboard/shared/add-item-form";
 import { ItemsList } from "@/components/dashboard/shared/items-list";
-import { addTribe, deleteTribe } from "./actions";
+import { addTribe, deleteTribe, updateTribe } from "./actions";
 
 export default function TribosPage() {
   return (
@@ -21,9 +21,11 @@ export default function TribosPage() {
         <div className="md:col-span-2">
           <ItemsList
             deleteAction={deleteTribe}
+            updateAction={updateTribe}
             title="Tribos Cadastradas"
             notFoundMessage="Nenhuma tribo cadastrada."
             tableName="tribos"
+            itemName="Tribo"
           />
         </div>
       </div>
