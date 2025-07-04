@@ -1,5 +1,5 @@
 import { EditionsList } from "@/components/dashboard/edicoes/editions-list";
-import { AddEditionDialog } from "@/components/dashboard/edicoes/add-edition-dialog";
+import { EditionFormDialog } from "@/components/dashboard/edicoes/edition-form-dialog";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -8,7 +8,7 @@ export default function EdicoesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Edições do Acampamento</h1>
-        <AddEditionDialog />
+        <EditionFormDialog mode="add" />
       </div>
       <Suspense fallback={<Skeleton className="w-full h-32" />}>
         <EditionsList />

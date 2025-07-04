@@ -14,6 +14,7 @@ import { PessoasList } from "@/components/dashboard/pessoas/pessoas-list";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EditionFormDialog } from "@/components/dashboard/edicoes/edition-form-dialog";
 
 export default async function EditionDetailsPage({
   params,
@@ -34,15 +35,21 @@ export default async function EditionDetailsPage({
   return (
     <div>
       <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-3xl">{edicao.nome_edicao}</CardTitle>
-          <CardDescription>Edição Nº {edicao.numero_edicao}</CardDescription>
+        <CardHeader className="flex-row items-start justify-between">
+          <div>
+            <CardTitle className="text-3xl">{edicao.nome_edicao}</CardTitle>
+            <CardDescription>Edição Nº {edicao.numero_edicao}</CardDescription>
+          </div>
+          <EditionFormDialog mode="edit" initialData={edicao} />
         </CardHeader>
         <CardContent className="flex gap-4">
           <Badge variant="secondary">{edicao.local}</Badge>
           <Badge variant="outline">
             {format(new Date(edicao.data_inicio), "dd/MM/yyyy")} a{" "}
             {format(new Date(edicao.data_fim), "dd/MM/yyyy")}
+          </Badge>
+           <Badge variant="default">
+            Inscrição: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(edicao.taxa_inscricao || 0)}
           </Badge>
         </CardContent>
       </Card>
