@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Home } from "lucide-react";
+import { Briefcase, Calendar, Home, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/dashboard", label: "Início", icon: Home },
   { href: "/dashboard/edicoes", label: "Edições", icon: Calendar },
+  { href: "/dashboard/setores", label: "Setores", icon: Briefcase },
+  { href: "/dashboard/tribos", label: "Tribos", icon: Shield },
 ];
 
 export function Sidebar() {
