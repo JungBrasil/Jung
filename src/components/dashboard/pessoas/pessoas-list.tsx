@@ -8,6 +8,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 type PessoaTipo = "participante" | "equipe";
 
@@ -21,7 +24,7 @@ export async function PessoasList({
   const supabase = createSupabaseServerClient();
   const { data: pessoas, error } = await supabase
     .from("pessoas")
-    .select("*")
+    .select("*, tribos(nome)")
     .eq("edicao_id", editionId)
     .eq("tipo", tipo)
     .order("nome_completo", { ascending: true });
@@ -47,19 +50,30 @@ export async function PessoasList({
         <TableHeader>
           <TableRow>
             <TableHead>Nome Completo</TableHead>
+            <TableHead>Tribo</TableHead>
             <TableHead>Telefone</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Camiseta</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {pessoas.map((p) => (
             <TableRow key={p.id}>
               <TableCell className="font-medium">{p.nome_completo}</TableCell>
-              <TableCell>{p.telefone}</TableCell>
-              <TableCell>{p.email}</TableCell>
               <TableCell>
-                <Badge variant="outline">{p.tamanho_camiseta}</Badge>
+                {p.tribos ? (
+                  <Badge variant="secondary">{p.tribos.nome}</Badge>
+                ) : (
+                  <span className="text-xs text-muted-foreground">N/A</span>
+                )}
+              </TableCell>
+              <TableCell>{p.telefone}</TableCell>
+              <TableCell className="text-right">
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/dashboard/pessoas/${p.id}`}>
+                    Detalhes
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
               </TableCell>
             </TableRow>
           ))}
