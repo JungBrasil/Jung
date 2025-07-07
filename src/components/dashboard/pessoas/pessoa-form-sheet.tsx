@@ -82,6 +82,7 @@ interface PessoaFormSheetProps {
 
 export function PessoaFormSheet({ editionId, tipo, mode, initialData, trigger }: PessoaFormSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCepLoading, setIsCepLoading] = useState(false);
   
   const defaultValues = mode === 'edit' && initialData ? {
     ...initialData,
@@ -120,6 +121,32 @@ export function PessoaFormSheet({ editionId, tipo, mode, initialData, trigger }:
       toast.error(result.error);
     }
   }
+
+  const handleCepBlur = async (event: React.FocusEvent<HTMLInputElement>) => {
+    const cep = event.target.value.replace(/\D/g, '');
+    if (cep.length !== 8) {
+      return;
+    }
+
+    setIsCepLoading(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
+      if (data.erro) {
+        toast.error("CEP não encontrado.");
+        return;
+      }
+      form.setValue("endereco_rua", data.logradouro);
+      form.setValue("endereco_bairro", data.bairro);
+      form.setValue("endereco_cidade", data.localidade);
+      form.setValue("endereco_estado", data.uf);
+      toast.success("Endereço preenchido automaticamente!");
+    } catch (error) {
+      toast.error("Falha ao buscar CEP.");
+    } finally {
+      setIsCepLoading(false);
+    }
+  };
   
   const isEditMode = mode === 'edit';
   const title = isEditMode ? 'Editar Dados' : (tipo === 'participante' ? 'Adicionar Novo Participante' : 'Adicionar Membro da Equipe');
@@ -162,7 +189,13 @@ export function PessoaFormSheet({ editionId, tipo, mode, initialData, trigger }:
 
                 <h3 className="font-semibold text-lg mt-6 mb-2">Endereço</h3>
                 <FormField name="endereco_cep" control={form.control} render={({ field }) => (
-                  <FormItem><FormLabel>CEP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem>
+                    <FormLabel>CEP</FormLabel>
+                    <FormControl>
+                      <Input {...field} onBlur={handleCepBlur} disabled={isCepLoading} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )} />
                 <FormField name="endereco_rua" control={form.control} render={({ field }) => (
                   <FormItem><FormLabel>Rua</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
