@@ -28,7 +28,7 @@ export const Header = () => {
           Sobre
         </Link>
         <Link
-          href="#"
+          href="/contato"
           className="text-sm font-medium hover:underline underline-offset-4"
           prefetch={false}
         >
