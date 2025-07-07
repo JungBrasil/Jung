@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Calendar, Home, Menu, Shield } from "lucide-react";
+import { Briefcase, Calendar, Home, LogOut, Menu, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -10,6 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { logout } from "@/app/actions";
 
 const navItems = [
   { href: "/dashboard", label: "Início", icon: Home },
@@ -52,6 +53,14 @@ export function Header() {
               </Link>
             ))}
           </nav>
+          <div className="mt-auto">
+            <form action={logout}>
+              <Button variant="ghost" className="w-full justify-start text-lg font-medium">
+                <LogOut className="mr-4 h-5 w-5" />
+                Sair
+              </Button>
+            </form>
+          </div>
         </SheetContent>
       </Sheet>
       <div className="w-full flex-1">

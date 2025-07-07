@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Calendar, Home, Shield } from "lucide-react";
+import { Briefcase, Calendar, Home, LogOut, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
+import { logout } from "@/app/actions";
 
 const navItems = [
   { href: "/dashboard", label: "Início", icon: Home },
@@ -23,7 +25,7 @@ export function Sidebar() {
             <span className="">HdH Acampamento</span>
           </Link>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 overflow-auto py-2">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
             {navItems.map(({ href, label, icon: Icon }) => (
               <Link
@@ -31,7 +33,7 @@ export function Sidebar() {
                 href={href}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                  { "bg-muted text-primary": pathname === href },
+                  { "bg-muted text-primary": pathname.startsWith(href) && (href !== '/dashboard' || pathname === '/dashboard') },
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -39,6 +41,14 @@ export function Sidebar() {
               </Link>
             ))}
           </nav>
+        </div>
+        <div className="mt-auto p-4">
+           <form action={logout}>
+            <Button variant="ghost" className="w-full justify-start">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </Button>
+          </form>
         </div>
       </div>
     </div>
