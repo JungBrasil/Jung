@@ -6,6 +6,7 @@ import { Briefcase, Calendar, Home, LogOut, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { logout } from "@/app/actions";
+import { ThemeToggle } from "../theme-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Início", icon: Home },
@@ -42,7 +43,8 @@ export function Sidebar() {
             ))}
           </nav>
         </div>
-        <div className="mt-auto p-4">
+        <div className="mt-auto p-4 space-y-2">
+           <ThemeToggle />
            <form action={logout}>
             <Button variant="ghost" className="w-full justify-start">
               <LogOut className="mr-2 h-4 w-4" />

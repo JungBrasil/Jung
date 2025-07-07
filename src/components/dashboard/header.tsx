@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/actions";
+import { ThemeToggle } from "../theme-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Início", icon: Home },
@@ -23,10 +24,10 @@ export function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 md:hidden">
+    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0">
+          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
             <span className="sr-only">Abrir menu de navegação</span>
           </Button>
@@ -53,7 +54,8 @@ export function Header() {
               </Link>
             ))}
           </nav>
-          <div className="mt-auto">
+          <div className="mt-auto space-y-2">
+            <ThemeToggle />
             <form action={logout}>
               <Button variant="ghost" className="w-full justify-start text-lg font-medium">
                 <LogOut className="mr-4 h-5 w-5" />
