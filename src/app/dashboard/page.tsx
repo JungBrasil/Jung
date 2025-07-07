@@ -7,50 +7,68 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Users, Wallet, Shield } from "lucide-react";
+import { Users, Wallet, Shield } from "lucide-react";
 import { StatCard } from "@/components/dashboard/dashboard/stat-card";
 import { TribeDistributionChart } from "@/components/dashboard/dashboard/tribe-distribution-chart";
 import { RecentSignups } from "@/components/dashboard/dashboard/recent-signups";
+import { EditionSelector } from "@/components/dashboard/dashboard/edition-selector";
 
-async function getDashboardData() {
+async function getDashboardData(selectedEditionId?: string) {
   const supabase = createSupabaseServerClient();
 
-  // 1. Encontrar a edição mais recente
-  const { data: latestEdition, error: editionError } = await supabase
+  // 1. Obter todas as edições para o seletor
+  const { data: allEditions, error: allEditionsError } = await supabase
     .from("edicoes")
-    .select("id, nome_edicao, taxa_inscricao")
-    .order("numero_edicao", { ascending: false })
-    .limit(1)
-    .single();
+    .select("id, nome_edicao")
+    .order("numero_edicao", { ascending: false });
 
-  if (editionError || !latestEdition) {
-    return { latestEdition: null };
+  if (allEditionsError || !allEditions || allEditions.length === 0) {
+    return { allEditions: [] };
   }
 
-  const editionId = latestEdition.id;
+  // 2. Determinar a edição a ser exibida
+  let targetEdition;
+  if (selectedEditionId) {
+    const { data, error } = await supabase
+      .from("edicoes")
+      .select("id, nome_edicao, taxa_inscricao")
+      .eq("id", selectedEditionId)
+      .single();
+    if (!error) targetEdition = data;
+  }
 
-  // 2. Obter contagens de pessoas
-  const { data: peopleCounts, error: peopleError } = await supabase
+  if (!targetEdition) {
+    targetEdition = await supabase
+      .from("edicoes")
+      .select("id, nome_edicao, taxa_inscricao")
+      .order("numero_edicao", { ascending: false })
+      .limit(1)
+      .single()
+      .then(res => res.data);
+  }
+  
+  if (!targetEdition) {
+     return { allEditions };
+  }
+
+  const editionId = targetEdition.id;
+
+  // 3. Obter dados para a edição alvo
+  const { data: peopleCounts } = await supabase
     .from("pessoas")
     .select("tipo", { count: "exact" })
     .eq("edicao_id", editionId);
 
-  const participantCount =
-    peopleCounts?.filter((p: any) => p.tipo === "participante").length ?? 0;
-  const teamCount =
-    peopleCounts?.filter((p: any) => p.tipo === "equipe").length ?? 0;
+  const participantCount = peopleCounts?.filter((p: any) => p.tipo === "participante").length ?? 0;
+  const teamCount = peopleCounts?.filter((p: any) => p.tipo === "equipe").length ?? 0;
 
-  // 3. Obter total arrecadado
-  const { data: payments, error: paymentError } = await supabase
+  const { data: payments } = await supabase
     .from("pagamentos")
     .select("valor")
     .eq("edicao_id", editionId);
+  const totalCollected = payments?.reduce((sum, p) => sum + parseFloat(p.valor), 0) ?? 0;
 
-  const totalCollected =
-    payments?.reduce((sum, p) => sum + parseFloat(p.valor), 0) ?? 0;
-
-  // 4. Obter distribuição por tribo
-  const { data: tribeDistribution, error: tribeError } = await supabase
+  const { data: tribeDistribution } = await supabase
     .from("pessoas")
     .select("tribos(nome)")
     .eq("edicao_id", editionId)
@@ -61,16 +79,9 @@ async function getDashboardData() {
     acc[tribeName] = (acc[tribeName] || 0) + 1;
     return acc;
   }, {});
+  const chartData = tribeData ? Object.keys(tribeData).map((name) => ({ name, total: tribeData[name] })) : [];
 
-  const chartData = tribeData
-    ? Object.keys(tribeData).map((name) => ({
-        name,
-        total: tribeData[name],
-      }))
-    : [];
-
-  // 5. Obter inscrições recentes
-  const { data: recentSignups, error: signupsError } = await supabase
+  const { data: recentSignups } = await supabase
     .from("pessoas")
     .select("id, nome_completo, tipo, created_at, avatar_url")
     .eq("edicao_id", editionId)
@@ -78,7 +89,8 @@ async function getDashboardData() {
     .limit(5);
 
   return {
-    latestEdition,
+    allEditions,
+    currentEdition: targetEdition,
     stats: {
       participants: participantCount,
       team: teamCount,
@@ -89,10 +101,15 @@ async function getDashboardData() {
   };
 }
 
-export default async function DashboardHome() {
-  const data = await getDashboardData();
+export default async function DashboardHome({
+  searchParams,
+}: {
+  searchParams?: { edition?: string };
+}) {
+  const selectedEditionId = searchParams?.edition;
+  const data = await getDashboardData(selectedEditionId);
 
-  if (!data.latestEdition) {
+  if (data.allEditions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
         <h1 className="text-2xl font-bold mb-2">Bem-vindo!</h1>
@@ -105,12 +122,27 @@ export default async function DashboardHome() {
       </div>
     );
   }
+  
+  if (!data.currentEdition) {
+     return (
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <h1 className="text-2xl font-bold mb-2">Selecione uma edição</h1>
+        <p className="text-muted-foreground mb-4">
+          Use o seletor acima para carregar os dados de uma edição.
+        </p>
+         <EditionSelector editions={data.allEditions} currentEditionId={""} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">
-        Painel - {data.latestEdition.nome_edicao}
-      </h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-3xl font-bold">
+          Painel - {data.currentEdition.nome_edicao}
+        </h1>
+        <EditionSelector editions={data.allEditions} currentEditionId={data.currentEdition.id} />
+      </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Participantes"
