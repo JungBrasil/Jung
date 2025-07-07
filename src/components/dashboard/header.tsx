@@ -12,16 +12,22 @@ import {
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/actions";
 import { ThemeToggle } from "../theme-toggle";
+import { UserRole } from "@/lib/supabase/user";
 
 const navItems = [
-  { href: "/dashboard", label: "Início", icon: Home },
-  { href: "/dashboard/edicoes", label: "Edições", icon: Calendar },
-  { href: "/dashboard/setores", label: "Setores", icon: Briefcase },
-  { href: "/dashboard/tribos", label: "Tribos", icon: Shield },
+  { href: "/dashboard", label: "Início", icon: Home, requiredRole: ["admin", "editor", "viewer"] },
+  { href: "/dashboard/edicoes", label: "Edições", icon: Calendar, requiredRole: ["admin", "editor", "viewer"] },
+  { href: "/dashboard/setores", label: "Setores", icon: Briefcase, requiredRole: ["admin"] },
+  { href: "/dashboard/tribos", label: "Tribos", icon: Shield, requiredRole: ["admin"] },
 ];
 
-export function Header() {
+interface HeaderProps {
+  userRole: UserRole;
+}
+
+export function Header({ userRole }: HeaderProps) {
   const pathname = usePathname();
+  const accessibleNavItems = navItems.filter(item => item.requiredRole.includes(userRole));
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
@@ -40,7 +46,7 @@ export function Header() {
             >
               <span className="">HdH Acampamento</span>
             </Link>
-            {navItems.map(({ href, label, icon: Icon }) => (
+            {accessibleNavItems.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}

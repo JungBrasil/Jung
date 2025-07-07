@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import * as z from "zod";
+import { getUserWithProfile } from "@/lib/supabase/user";
 
 const formSchema = z.object({
   numero_edicao: z.number(),
@@ -16,6 +17,11 @@ const formSchema = z.object({
 type EditionSchema = z.infer<typeof formSchema>;
 
 export async function addEdition(values: EditionSchema) {
+  const { profile } = await getUserWithProfile();
+  if (profile?.role !== 'admin') {
+    return { success: false, error: "Acesso não autorizado." };
+  }
+
   const supabase = createSupabaseServerClient();
 
   const { data, error } = await supabase.from("edicoes").insert([
@@ -39,6 +45,11 @@ export async function addEdition(values: EditionSchema) {
 }
 
 export async function updateEdition(editionId: string, values: EditionSchema) {
+  const { profile } = await getUserWithProfile();
+  if (profile?.role !== 'admin') {
+    return { success: false, error: "Acesso não autorizado." };
+  }
+
   const supabase = createSupabaseServerClient();
 
   const { data, error } = await supabase

@@ -18,6 +18,7 @@ import { EditionFormDialog } from "@/components/dashboard/edicoes/edition-form-d
 import { GenerateReportButton } from "@/components/dashboard/edicoes/generate-report-button";
 import { SearchInput } from "@/components/dashboard/shared/search-input";
 import { ExportCsvButton } from "@/components/dashboard/edicoes/export-csv-button";
+import { getUserWithProfile } from "@/lib/supabase/user";
 
 export default async function EditionDetailsPage({
   params,
@@ -37,6 +38,11 @@ export default async function EditionDetailsPage({
     notFound();
   }
 
+  const { profile } = await getUserWithProfile();
+  const isAdmin = profile?.role === 'admin';
+  const isEditor = profile?.role === 'editor';
+  const canEdit = isAdmin || isEditor;
+
   const searchQuery = searchParams?.q || "";
 
   return (
@@ -47,7 +53,7 @@ export default async function EditionDetailsPage({
             <CardTitle className="text-3xl">{edicao.nome_edicao}</CardTitle>
             <CardDescription>Edição Nº {edicao.numero_edicao}</CardDescription>
           </div>
-          <EditionFormDialog mode="edit" initialData={edicao} />
+          {isAdmin && <EditionFormDialog mode="edit" initialData={edicao} />}
         </CardHeader>
         <CardContent className="flex gap-4">
           <Badge variant="secondary">{edicao.local}</Badge>
@@ -77,7 +83,7 @@ export default async function EditionDetailsPage({
         <TabsContent value="participantes">
           <div className="flex items-center justify-between my-6">
             <h2 className="text-2xl font-bold">Lista de Participantes</h2>
-            <PessoaFormSheet editionId={edicao.id} tipo="participante" mode="add" />
+            {canEdit && <PessoaFormSheet editionId={edicao.id} tipo="participante" mode="add" />}
           </div>
           <Suspense fallback={<Skeleton className="w-full h-64" />}>
             <PessoasList editionId={edicao.id} tipo="participante" searchQuery={searchQuery} />
@@ -86,7 +92,7 @@ export default async function EditionDetailsPage({
         <TabsContent value="equipe">
           <div className="flex items-center justify-between my-6">
             <h2 className="text-2xl font-bold">Lista da Equipe</h2>
-            <PessoaFormSheet editionId={edicao.id} tipo="equipe" mode="add" />
+            {canEdit && <PessoaFormSheet editionId={edicao.id} tipo="equipe" mode="add" />}
           </div>
           <Suspense fallback={<Skeleton className="w-full h-64" />}>
             <PessoasList editionId={edicao.id} tipo="equipe" searchQuery={searchQuery} />

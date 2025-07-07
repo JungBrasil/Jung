@@ -7,16 +7,23 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { logout } from "@/app/actions";
 import { ThemeToggle } from "../theme-toggle";
+import { UserRole } from "@/lib/supabase/user";
 
 const navItems = [
-  { href: "/dashboard", label: "Início", icon: Home },
-  { href: "/dashboard/edicoes", label: "Edições", icon: Calendar },
-  { href: "/dashboard/setores", label: "Setores", icon: Briefcase },
-  { href: "/dashboard/tribos", label: "Tribos", icon: Shield },
+  { href: "/dashboard", label: "Início", icon: Home, requiredRole: ["admin", "editor", "viewer"] },
+  { href: "/dashboard/edicoes", label: "Edições", icon: Calendar, requiredRole: ["admin", "editor", "viewer"] },
+  { href: "/dashboard/setores", label: "Setores", icon: Briefcase, requiredRole: ["admin"] },
+  { href: "/dashboard/tribos", label: "Tribos", icon: Shield, requiredRole: ["admin"] },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  userRole: UserRole;
+}
+
+export function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname();
+
+  const accessibleNavItems = navItems.filter(item => item.requiredRole.includes(userRole));
 
   return (
     <div className="hidden border-r bg-muted/40 md:block">
@@ -28,7 +35,7 @@ export function Sidebar() {
         </div>
         <div className="flex-1 overflow-auto py-2">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-            {navItems.map(({ href, label, icon: Icon }) => (
+            {accessibleNavItems.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
