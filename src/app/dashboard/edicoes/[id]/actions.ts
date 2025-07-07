@@ -94,3 +94,54 @@ export async function getParticipantsForReport(editionId: string) {
 
   return { data };
 }
+
+export async function getPeopleForCsvExport(editionId: string) {
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("pessoas")
+    .select(`
+      nome_completo,
+      tipo,
+      data_nascimento,
+      telefone,
+      email,
+      endereco_rua,
+      endereco_numero,
+      endereco_complemento,
+      endereco_bairro,
+      endereco_cidade,
+      endereco_estado,
+      endereco_cep,
+      altura_cm,
+      peso_kg,
+      tamanho_camiseta,
+      toma_medicamento_continuo,
+      medicamentos_continuos,
+      possui_alergias,
+      alergias,
+      e_servo,
+      paroquia,
+      comunidade,
+      observacoes,
+      tribos(nome),
+      pagamentos(valor)
+    `)
+    .eq("edicao_id", editionId)
+    .order("nome_completo", { ascending: true });
+
+  if (error) {
+    console.error("CSV Export error:", error);
+    return { error: "Falha ao buscar dados para exportação." };
+  }
+
+  // Processar os dados para um formato plano
+  const flatData = data.map(p => ({
+    ...p,
+    tribo: p.tribos?.nome || '',
+    total_pago: p.pagamentos.reduce((sum, pay) => sum + parseFloat(pay.valor), 0),
+    pagamentos: undefined, // remover dados aninhados
+    tribos: undefined,
+  }));
+
+  return { data: flatData };
+}

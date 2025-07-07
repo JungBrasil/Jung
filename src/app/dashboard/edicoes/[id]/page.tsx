@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditionFormDialog } from "@/components/dashboard/edicoes/edition-form-dialog";
 import { GenerateReportButton } from "@/components/dashboard/edicoes/generate-report-button";
 import { SearchInput } from "@/components/dashboard/shared/search-input";
+import { ExportCsvButton } from "@/components/dashboard/edicoes/export-csv-button";
 
 export default async function EditionDetailsPage({
   params,
@@ -60,9 +61,12 @@ export default async function EditionDetailsPage({
         </CardContent>
       </Card>
 
-      <div className="flex justify-between items-center mb-6 gap-4">
+      <div className="flex justify-between items-center mb-6 gap-4 flex-wrap">
         <SearchInput placeholder="Buscar por nome..." />
-        <GenerateReportButton editionId={edicao.id} editionName={edicao.nome_edicao} />
+        <div className="flex gap-2">
+          <GenerateReportButton editionId={edicao.id} editionName={edicao.nome_edicao} />
+          <ExportCsvButton editionId={edicao.id} editionName={edicao.nome_edicao} />
+        </div>
       </div>
 
       <Tabs defaultValue="participantes">
