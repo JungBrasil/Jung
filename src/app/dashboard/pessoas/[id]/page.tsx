@@ -25,12 +25,14 @@ import {
   Briefcase,
   DollarSign,
   Pencil,
+  UserCircle,
 } from "lucide-react";
 import { AssignTribe } from "@/components/dashboard/pessoas/assign-tribe";
 import { AssignSectors } from "@/components/dashboard/pessoas/assign-sectors";
 import { FinancialStatus } from "@/components/dashboard/pessoas/financial-status";
 import { PessoaFormSheet } from "@/components/dashboard/pessoas/pessoa-form-sheet";
 import { Button } from "@/components/ui/button";
+import { AvatarUpload } from "@/components/dashboard/pessoas/avatar-upload";
 
 async function getPersonData(id: string) {
   const supabase = createSupabaseServerClient();
@@ -134,6 +136,12 @@ export default async function PessoaDetailsPage({
         </div>
 
         <div className="space-y-6">
+          <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><UserCircle className="h-5 w-5" /> Foto de Perfil</CardTitle></CardHeader>
+            <CardContent>
+              <AvatarUpload personId={person.id} currentAvatarUrl={person.avatar_url} personName={person.nome_completo} />
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5" /> Financeiro</CardTitle></CardHeader>
             <CardContent>

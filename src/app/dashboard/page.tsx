@@ -72,7 +72,7 @@ async function getDashboardData() {
   // 5. Obter inscrições recentes
   const { data: recentSignups, error: signupsError } = await supabase
     .from("pessoas")
-    .select("id, nome_completo, tipo, created_at")
+    .select("id, nome_completo, tipo, created_at, avatar_url")
     .eq("edicao_id", editionId)
     .order("created_at", { ascending: false })
     .limit(5);

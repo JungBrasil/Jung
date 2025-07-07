@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
@@ -6,6 +6,7 @@ interface Signup {
   id: string;
   nome_completo: string;
   tipo: string;
+  avatar_url: string | null;
 }
 
 export function RecentSignups({ signups }: { signups: Signup[] }) {
@@ -23,6 +24,7 @@ export function RecentSignups({ signups }: { signups: Signup[] }) {
         <Link href={`/dashboard/pessoas/${signup.id}`} key={signup.id}>
           <div className="flex items-center hover:bg-muted/50 p-2 rounded-md">
             <Avatar className="h-9 w-9">
+              <AvatarImage src={signup.avatar_url || undefined} alt={signup.nome_completo} />
               <AvatarFallback>
                 {signup.nome_completo
                   .split(" ")

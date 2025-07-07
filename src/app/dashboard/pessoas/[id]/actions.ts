@@ -4,6 +4,24 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import * as z from "zod";
 
+export async function updateAvatarUrl(personId: string, avatarUrl: string) {
+  const supabase = createSupabaseServerClient();
+  const { error } = await supabase
+    .from("pessoas")
+    .update({ avatar_url: avatarUrl })
+    .eq("id", personId);
+
+  if (error) {
+    console.error("Update avatar error:", error);
+    return { success: false, error: "Falha ao atualizar foto do perfil." };
+  }
+
+  revalidatePath(`/dashboard/pessoas/${personId}`);
+  revalidatePath(`/dashboard`);
+  return { success: true };
+}
+
+
 export async function updateTribeForPerson(personId: string, tribeId: string) {
   const supabase = createSupabaseServerClient();
   const { error } = await supabase
